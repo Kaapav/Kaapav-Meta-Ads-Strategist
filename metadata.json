@@ -1,0 +1,5 @@
+{
+  "name": "Kaapav Meta Ads Strategist",
+  "description": "An AI-driven dashboard to manage Meta Ads, analyze performance, and generate strategic recommendations. This application provides a comprehensive UI to visualize ad campaigns, manage leads, and leverage AI to predict ROAS and optimize creative performance, simulating a full-stack environment within a single-page React application.",
+  "requestFramePermissions": []
+}

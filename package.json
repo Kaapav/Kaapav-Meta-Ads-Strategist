@@ -1,0 +1,30 @@
+{
+  "name": "kaapav-meta-ads-strategist",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "@google/genai": "^1.25.0",
+    "lucide-react": "^0.546.0",
+    "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "firebase-admin": "^13.5.0",
+    "ws": "^8.18.3",
+    "http": "^0.0.1-security",
+    "path": "^0.12.7",
+    "url": "^0.11.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
