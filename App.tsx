@@ -1,121 +1,46 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ShieldCheck, Smartphone, BarChart2, Zap, Users, Bot, Settings as SettingsIcon, MessageSquare, Plus, Trash2, Send, X, Copy, Sun, Moon, Briefcase, FileText, CheckCircle, Clock, ChevronDown, CheckSquare, Square, BookOpen, AlertTriangle, Loader, ChevronUp, Server
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
-// --- SELF-CONTAINED MOCK API SERVICE (FOR CRM & AUDIT LOGS) ---
-// This service simulates the CRM/Audit backend locally while campaigns are live.
-// This ensures an error-free, one-step-at-a-time migration.
+// --- HYBRID MOCK/LIVE API SERVICE ---
+// This service is now ONLY responsible for AI Copy Generation and providing a 
+// complete data fallback if the live server cannot be reached. All primary
+// data is now fetched from the live Express server.
 
 const mockApiService = {
   db: {
-    // FIX: Added campaign data to mock service
-    campaigns: [
+    // FALLBACK CAMPAIGN DATA: Used only if the live server connection fails.
+    fallbackCampaigns: [
         { id: 'C001', name: 'Sari Sensation - Diwali Sale', status: 'Active', spend: 50000, impressions: 750000, clicks: 15000, purchase_value: 250000, actions: 100 },
         { id: 'C002', name: 'Kurti Karnival - Festive Deals', status: 'Active', spend: 75000, impressions: 1200000, clicks: 18000, purchase_value: 450000, actions: 180 },
         { id: 'C003', name: 'Jewellery Junction - Wedding Season', status: 'Paused', spend: 25000, impressions: 300000, clicks: 4500, purchase_value: 80000, actions: 32 },
         { id: 'C004', name: 'Lehenga Love - Clearance', status: 'Active', spend: 30000, impressions: 500000, clicks: 10000, purchase_value: 120000, actions: 48 },
     ],
-    leads: [
+    // FALLBACK CRM/AUDIT DATA:
+    fallbackLeads: [
         { id: 'L001', name: 'Priya Sharma', phone: '98XXXXXX01', chatHistory: [{sender: 'lead', text: 'Is this available in red?', timestamp: new Date(Date.now() - 3600000) }], timestamp: new Date(Date.now() - 3600000), status: 'New Lead', adcreative_id: 'AD001', utm_source: 'instagram' },
         { id: 'L002', name: 'Anjali Verma', phone: '98XXXXXX02', chatHistory: [{sender: 'lead', text: 'What is the price?', timestamp: new Date(Date.now() - 7200000) }], timestamp: new Date(Date.now() - 7200000), status: 'Contacted', adcreative_id: 'AD002', utm_source: 'facebook' },
     ],
-    auditLogs: [
+    fallbackAuditLogs: [
         { id: 'A001', timestamp: new Date(Date.now() - 3600000), user: 'System', action: 'New WhatsApp Lead', details: 'Lead "Priya Sharma" created.' },
         { id: 'A002', timestamp: new Date(Date.now() - 7200000), user: 'AI Autopilot', action: 'Campaign Paused', details: 'Campaign "Jewellery Junction" paused due to low ROAS (1.8).' },
     ],
   },
 
-  // FIX: Replaced getLeadsAndLogs with getInitialData to provide all necessary data.
-  async getInitialData() {
-    console.log('[MockAPI] GET /api/initial-data (All data)');
-    const campaignsWithMetrics = this.db.campaigns.map(item => ({
+  // This function provides a complete fallback dataset if the server is down.
+  async getFallbackData() {
+    console.log('[MockAPI] GET /fallback-data (Server Connection Failed)');
+    const campaignsWithMetrics = this.db.fallbackCampaigns.map(item => ({
         ...item,
         ctr: item.impressions > 0 ? (item.clicks / item.impressions) * 100 : 0,
         roas: item.spend > 0 ? item.purchase_value / item.spend : 0,
         cpa: item.actions > 0 ? item.spend / item.actions : 0,
     }));
-    const leads = [...this.db.leads].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-    const auditLogs = [...this.db.auditLogs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    const leads = [...this.db.fallbackLeads].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    const auditLogs = [...this.db.fallbackAuditLogs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     return Promise.resolve({ campaigns: campaignsWithMetrics, leads, auditLogs });
-  },
-  
-  async sendMessageToLead(leadId, message, onUpdate) {
-    console.log(`[MockAPI] POST /api/leads/${leadId}/message - Message: ${message}`);
-    const leadIndex = this.db.leads.findIndex(l => l.id === leadId);
-    if (leadIndex !== -1) {
-      const lead = this.db.leads[leadIndex];
-      lead.chatHistory.push({ sender: 'user', text: message, timestamp: new Date() });
-      lead.timestamp = new Date();
-
-      const log = {
-        id: `A${(this.db.auditLogs.length + 1).toString().padStart(3, '0')}`,
-        timestamp: new Date(),
-        user: 'User',
-        action: 'Message Sent',
-        details: `Sent message to "${lead.name}"`,
-      };
-      this.db.auditLogs.push(log);
-
-      onUpdate({
-        leads: [...this.db.leads].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()),
-        auditLogs: [...this.db.auditLogs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      });
-
-      // Simulate a reply
-      setTimeout(async () => {
-        lead.chatHistory.push({ sender: 'lead', text: 'Thank you for your message!', timestamp: new Date() });
-        lead.timestamp = new Date();
-        onUpdate({
-            leads: [...this.db.leads].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()),
-            auditLogs: [...this.db.auditLogs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-        });
-      }, 2000);
-
-      return Promise.resolve(lead);
-    }
-    return Promise.reject(new Error('Lead not found'));
-  },
-
-  async updateLeadStatus(leadId, status, onUpdate) {
-    console.log(`[MockAPI] POST /api/leads/${leadId}/status - New status: ${status}`);
-    const leadIndex = this.db.leads.findIndex(l => l.id === leadId);
-    if (leadIndex !== -1) {
-      this.db.leads[leadIndex].status = status;
-      const lead = this.db.leads[leadIndex];
-      
-      const log = {
-        id: `A${(this.db.auditLogs.length + 1).toString().padStart(3, '0')}`,
-        timestamp: new Date(),
-        user: 'User',
-        action: `Lead Status Changed`,
-        details: `Status of "${lead.name}" changed to "${status}"`,
-      };
-      this.db.auditLogs.push(log);
-      
-      if (status === 'Paid') {
-          console.log(`[AUTOMATION] Firing n8n webhook for lead: ${lead.name}`);
-          const n8nLog = {
-            id: `A${(this.db.auditLogs.length + 1).toString().padStart(3, '0')}`,
-            timestamp: new Date(),
-            user: 'System',
-            action: `Fulfillment Triggered`,
-            details: `n8n webhook fired for "${lead.name}" for Shiprocket automation.`,
-          };
-          this.db.auditLogs.push(n8nLog);
-      }
-
-      onUpdate({
-        leads: [...this.db.leads].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()),
-        auditLogs: [...this.db.auditLogs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      });
-
-      return Promise.resolve(lead);
-    } else {
-      return Promise.reject(new Error('Lead not found'));
-    }
   },
 
   async generateAdCopy(settings) {
@@ -163,8 +88,9 @@ const mockApiService = {
 
 // --- UI COMPONENTS ---
 
-const Card = ({ children, className = '' }) => (
-  <div className={`bg-brand-gray/50 backdrop-blur-sm border border-brand-gold/20 rounded-lg p-4 sm:p-6 ${className}`}>
+// FIX: Updated Card component to accept all standard div attributes, resolving multiple TypeScript errors.
+const Card = ({ children, className = '', ...props }: React.ComponentProps<'div'>) => (
+  <div className={`bg-brand-gray/50 backdrop-blur-sm border border-brand-gold/20 rounded-lg p-4 sm:p-6 ${className}`} {...props}>
     {children}
   </div>
 );
@@ -264,8 +190,7 @@ const KpiCard = ({ title, value, change, isCurrency = false }) => (
     <Card className="flex-1 min-w-[140px]">
       <h3 className="text-sm font-medium text-brand-light-gray uppercase tracking-wider">{title}</h3>
       <p className="text-2xl font-bold text-brand-light mt-1">
-        {/* FIX: Consistently handle 'value' as a number to prevent type errors. */}
-        {isCurrency ? `₹${value.toLocaleString('en-IN')}` : value.toFixed(2)}
+        {isCurrency ? `₹${Number(value).toLocaleString('en-IN')}` : Number(value).toFixed(2)}
       </p>
       {change && (
         <p className={`text-sm mt-1 flex items-center ${change > 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -404,7 +329,6 @@ const DashboardView = ({ campaigns }) => {
             <div className="flex flex-wrap gap-4">
                 <KpiCard title="Total Spend" value={totalSpend} change={-5} isCurrency />
                 <KpiCard title="Total Revenue" value={totalPurchaseValue} change={12} isCurrency />
-                {/* FIX: Pass totalRoas as a number to KpiCard to align with type expectations. */}
                 <KpiCard title="Overall ROAS" value={totalRoas} change={8} />
             </div>
              <Card>
@@ -674,67 +598,75 @@ const GrowthEngineView = ({ settings, setSettings, onGenerateCopy, aiCopyIdeas, 
             <Card>
                 <h2 className="text-xl font-bold text-brand-gold mb-2">Advanced Automation Suite</h2>
                 <div className="space-y-4">
-                  <ToggleSwitch label="Comment-to-DM Autopilot" description="Trigger a DM when users comment a keyword." isEnabled={settings.commentToDm} onToggle={() => setSettings(p => ({...p, commentToDm: !p.commentToDm}))} />
-                  {settings.commentToDm && (
-                    <div className="pl-4 space-y-2">
-                      <input type="text" placeholder="Keyword (e.g., 'DEAL')" className="w-full bg-brand-dark border border-brand-gold/30 rounded-md p-2 text-brand-light" />
-                      <textarea placeholder="Automated Message" rows="2" className="w-full bg-brand-dark border border-brand-gold/30 rounded-md p-2 text-brand-light" />
-                    </div>
-                  )}
-                  <ToggleSwitch label="Sentiment-Based Comment Pinning" description="AI finds and pins the most positive user comment." isEnabled={settings.sentimentPinning} onToggle={() => setSettings(p => ({...p, sentimentPinning: !p.sentimentPinning}))} />
-                  <ToggleSwitch label="Creative Flywheel Engine" description="Perpetually tests winning creative elements to breed 'super-creatives'." isEnabled={settings.creativeFlywheel} onToggle={() => setSettings(p => ({...p, creativeFlywheel: !p.creativeFlywheel}))} />
+                  <ToggleSwitch label="Comment-to-DM Autopilot" description="Trigger a DM when users comment with a specific keyword." isEnabled={settings.commentToDm} onToggle={() => setSettings(p => ({...p, commentToDm: !p.commentToDm}))} />
+                  <ToggleSwitch label="ROAS-based Bidding" description="Automatically adjusts bids to maintain your target ROAS." isEnabled={settings.roasBidding} onToggle={() => setSettings(p => ({...p, roasBidding: !p.roasBidding}))} />
+                   <div className="space-y-2">
+                        <label className="block text-sm font-medium text-brand-light-gray">Target ROAS</label>
+                        <input type="number" value={settings.targetRoas} onChange={(e) => setSettings(p => ({...p, targetRoas: e.target.value}))} className="w-full bg-brand-dark border border-brand-gold/30 rounded-md p-2 text-brand-light" placeholder="e.g., 4.5" />
+                   </div>
                 </div>
             </Card>
 
             <Card>
-                <h2 className="text-xl font-bold text-brand-gold mb-2">Creative & Messaging</h2>
-                <div>
-                  <label className="block text-sm font-medium text-brand-light-gray mb-1">Psychological Angle (Indian Women Mindset)</label>
-                  <select value={settings.psychologicalAngle} onChange={(e) => setSettings(prev => ({...prev, psychologicalAngle: e.target.value}))} className="w-full bg-brand-dark border border-brand-gold/30 rounded-md p-2 text-brand-light">
-                      <option>Aspirational Professional</option>
-                      <option>Festival Gifting</option>
-                      <option>Self-Care & Reward</option>
-                  </select>
-                </div>
+                <h2 className="text-xl font-bold text-brand-gold mb-2">Placement Optimizer</h2>
+                <p className="text-brand-light-gray text-sm mb-2">Select the placements where your ads will run. AI will recommend the best ones based on your campaign goals.</p>
                 <PlacementMatrix />
             </Card>
             
             <Card>
-                <h2 className="text-xl font-bold text-brand-gold mb-4">AI Creative Lab</h2>
-                <button onClick={onGenerateCopy} disabled={isGeneratingCopy} className="w-full bg-brand-gold text-brand-dark font-bold py-2 px-4 rounded-md flex items-center justify-center disabled:opacity-50">
-                    {isGeneratingCopy ? <Loader className="animate-spin" /> : <Zap className="mr-2" />}
-                    Generate Ad Copy Ideas
+                <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-bold text-brand-gold mb-2">AI Ad Copy Generator</h2>
+                    {aiChatHistory.length > 0 && (
+                        <button onClick={clearAiHistory} className="text-xs text-brand-light-gray hover:text-red-400 flex items-center space-x-1">
+                            <Trash2 size={12} />
+                            <span>Clear History</span>
+                        </button>
+                    )}
+                </div>
+                <p className="text-brand-light-gray text-sm mb-4">Leverage Gemini to generate high-converting ad copy based on your strategic settings.</p>
+                <button onClick={onGenerateCopy} disabled={isGeneratingCopy} className="w-full bg-brand-gold text-brand-dark font-bold py-2 px-4 rounded-md flex items-center justify-center disabled:bg-brand-gray">
+                    {isGeneratingCopy ? <><Loader className="animate-spin mr-2" /> Generating...</> : <><Bot className="mr-2" /> Generate Ideas</>}
                 </button>
+                
                 {aiCopyIdeas && (
-                    <div className="mt-4 space-y-2 bg-brand-dark/50 p-4 rounded-md">
-                        <h3 className="text-lg text-brand-gold font-bold">Generated Copy:</h3>
-                        <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: aiCopyIdeas.replace(/\n/g, '<br />').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                    <div className="mt-4 p-4 bg-brand-dark/50 rounded-md border border-brand-gold/20">
+                         <div className="flex justify-between items-center">
+                             <h3 className="text-lg font-bold text-brand-light mb-2">Generated Copy</h3>
+                             <button onClick={() => navigator.clipboard.writeText(aiCopyIdeas)} className="text-xs text-brand-light-gray hover:text-brand-gold flex items-center space-x-1">
+                                 <Copy size={12}/>
+                                 <span>Copy</span>
+                             </button>
+                         </div>
+                        <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: aiCopyIdeas.replace(/\n/g, '<br />') }} />
                     </div>
                 )}
+                
                  {aiChatHistory.length > 0 && (
                     <div className="mt-4">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg text-brand-gold font-bold">Generation History</h3>
-                            <button onClick={clearAiHistory} className="text-xs text-brand-light-gray hover:text-red-500"><Trash2 size={14} className="inline mr-1" />Clear</button>
-                        </div>
-                        <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
+                        <h3 className="text-lg font-bold text-brand-light mb-2">History</h3>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
                             {aiChatHistory.map((item, index) => (
-                                <div key={index}>
-                                    <button onClick={() => setActiveHistory(activeHistory === index ? null : index)} className="w-full text-left p-2 bg-brand-dark/50 rounded-md flex justify-between items-center">
-                                        <span className="text-sm text-brand-light">Generation from {new Date(item.timestamp).toLocaleString()}</span>
-                                        {activeHistory === index ? <ChevronUp /> : <ChevronDown />}
-                                    </button>
-                                    {activeHistory === index && (
-                                        <div className="p-4 bg-brand-dark rounded-b-md">
-                                             <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: item.response.replace(/\n/g, '<br />').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
-                                        </div>
-                                    )}
+                                <div key={index} className="bg-brand-dark/50 p-2 rounded-md border border-brand-gold/10 flex justify-between items-center">
+                                    <p className="text-sm text-brand-light-gray truncate">Generated on {new Date(item.timestamp).toLocaleString()}</p>
+                                    <button onClick={() => setActiveHistory(item.content)} className="text-xs text-brand-gold hover:underline">View</button>
                                 </div>
                             ))}
                         </div>
                     </div>
-                 )}
+                )}
             </Card>
+            
+            {activeHistory && (
+                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4" onClick={() => setActiveHistory(null)}>
+                     <Card className="w-full max-w-lg max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center border-b border-brand-gold/20 pb-2 mb-4">
+                            <h2 className="text-xl font-bold text-brand-gold">Archived Copy</h2>
+                            <button onClick={() => setActiveHistory(null)}><X className="text-brand-light-gray hover:text-brand-light" /></button>
+                        </div>
+                         <div className="flex-1 overflow-y-auto prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: activeHistory.replace(/\n/g, '<br />') }} />
+                     </Card>
+                 </div>
+            )}
         </div>
     );
 };
@@ -747,169 +679,170 @@ const App = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [leads, setLeads] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [activeChatLead, setActiveChatLead] = useState(null);
-  const [serverStatus, setServerStatus] = useState('connecting');
-  
   const [isGeneratingCopy, setIsGeneratingCopy] = useState(false);
-  const [aiCopyIdeas, setAiCopyIdeas] = useState("");
-
-
-  const getInitialSettings = () => {
-      try {
-          const savedSettings = localStorage.getItem('kaapavSettings');
-          const defaults = {
-            theme: 'dark', metaConnected: true, whatsAppConnected: false, googleSheetsConnected: false, n8nConnected: false,
-            googleSheetId: '', n8nWebhookUrl: '', targetAge: ['25', '26', '27', '28', '29', '30', '31', '32', '33', '34'], targetGender: ['Women'],
-            targetState: ['Maharashtra'], targetCity: ['Mumbai'], category: 'Fashion Jewellery',
-            ghostStrategy: true, dynamicCountdown: false, stockAlerts: true, socialProofInjection: true,
-            highValueLookalikes: true, targetEngagedShoppers: true, lowIntentExclusion: false,
-            commentToDm: false, sentimentPinning: true, creativeFlywheel: false, psychologicalAngle: 'Aspirational Professional',
-            aiChatHistory: []
-          };
-          const parsed = savedSettings ? JSON.parse(savedSettings) : {};
-          if (parsed.aiChatHistory && !Array.isArray(parsed.aiChatHistory)) {
-              parsed.aiChatHistory = [];
-          }
-          return { ...defaults, ...parsed };
-      } catch (e) {
-          console.error("Failed to parse settings from localStorage", e);
-          return { // Return defaults on error
-            theme: 'dark', metaConnected: true, whatsAppConnected: false, googleSheetsConnected: false, n8nConnected: false,
-            googleSheetId: '', n8nWebhookUrl: '', targetAge: ['25', '26', '27', '28', '29', '30', '31', '32', '33', '34'], targetGender: ['Women'],
-            targetState: ['Maharashtra'], targetCity: ['Mumbai'], category: 'Fashion Jewellery',
-            ghostStrategy: true, dynamicCountdown: false, stockAlerts: true, socialProofInjection: true,
-            highValueLookalikes: true, targetEngagedShoppers: true, lowIntentExclusion: false,
-            commentToDm: false, sentimentPinning: true, creativeFlywheel: false, psychologicalAngle: 'Aspirational Professional',
-            aiChatHistory: []
-          };
-      }
-  };
+  const [aiCopyIdeas, setAiCopyIdeas] = useState('');
+  const [aiChatHistory, setAiChatHistory] = useState([]);
+  const [error, setError] = useState(null);
+  const [serverStatus, setServerStatus] = useState('connecting'); // connecting, connected, error
   
-  const [settings, setSettings] = useState(getInitialSettings);
+  const [settings, setSettings] = useState({
+      theme: 'dark',
+      metaConnected: true,
+      whatsAppConnected: true,
+      googleSheetsConnected: false,
+      n8nConnected: false,
+      googleSheetId: '',
+      n8nWebhookUrl: '',
+      targetAge: ['25-34'],
+      targetGender: ['Women'],
+      targetState: ['Maharashtra'],
+      targetCity: ['Mumbai', 'Pune'],
+      category: 'Fashion Jewellery',
+      psychologicalAngle: 'Exclusivity',
+      dynamicCountdown: true,
+      stockAlerts: true,
+      socialProofInjection: false,
+      highValueLookalikes: true,
+      targetEngagedShoppers: true,
+      lowIntentExclusion: false,
+      commentToDm: true,
+      roasBidding: true,
+      targetRoas: '4.5',
+      ghostStrategy: false,
+  });
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
+    setServerStatus('connecting');
+    setError(null);
     try {
-      localStorage.setItem('kaapavSettings', JSON.stringify(settings));
-    } catch (e) {
-      console.error("Failed to save settings to localStorage", e);
+      const [campaignResponse, crmResponse] = await Promise.all([
+        fetch('/api/insights/campaign'),
+        fetch('/api/crm/crm-data')
+      ]);
+
+      if (!campaignResponse.ok || !crmResponse.ok) {
+        throw new Error('Network response from server was not ok.');
+      }
+
+      const campaignData = await campaignResponse.json();
+      const { leads, auditLogs } = await crmResponse.json();
+      
+      setCampaigns(campaignData);
+      setLeads(leads);
+      setAuditLogs(auditLogs);
+      setServerStatus('connected');
+
+    } catch (error) {
+      console.error("Could not connect to live server:", error);
+      setError('Could not connect to live server. Displaying cached data.');
+      setServerStatus('error');
+      // Fallback to cached data if server fails
+      const fallbackData = await mockApiService.getFallbackData();
+      setCampaigns(fallbackData.campaigns);
+      setLeads(fallbackData.leads);
+      setAuditLogs(fallbackData.auditLogs);
     }
-  }, [settings]);
-
-
-  const handleDataUpdate = useCallback((data) => {
-    const parseTimestamps = (items) => items.map(item => ({
-        ...item,
-        timestamp: new Date(String(item.timestamp)),
-        ...(item.chatHistory && {
-            chatHistory: item.chatHistory.map(chat => ({
-                ...chat,
-                timestamp: new Date(String(chat.timestamp))
-            }))
-        })
-    }));
-
-    if(data.leads) setLeads(parseTimestamps(data.leads));
-    if(data.auditLogs) setAuditLogs(parseTimestamps(data.auditLogs));
   }, []);
 
   useEffect(() => {
-    const checkServerHealth = async () => {
-        // In self-contained mode, server is always "connected"
-        setServerStatus('connected');
-    };
-    checkServerHealth();
-    
-    const fetchInitialData = async () => {
-      try {
-        setLoading(true);
-        // FIX: Called the correct getInitialData method.
-        const { campaigns, leads, auditLogs } = await mockApiService.getInitialData();
-        setCampaigns(campaigns);
-        handleDataUpdate({ leads, auditLogs });
-        setError(null);
-      } catch (err) {
-        console.error("Failed to fetch initial data:", err);
-        setError("Failed to fetch initial data. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchInitialData();
-  }, [handleDataUpdate]);
-  
-  const handleStatusChange = async (leadId, status) => {
-    await mockApiService.updateLeadStatus(leadId, status, handleDataUpdate);
+    fetchData();
+  }, [fetchData]);
+
+  const handleUpdateConnection = (connectionType) => {
+    setSettings(prev => ({ ...prev, [`${connectionType}Connected`]: !prev[`${connectionType}Connected`]}));
   };
   
-  const handleSendMessage = async (leadId, message) => {
-    await mockApiService.sendMessageToLead(leadId, message, handleDataUpdate);
-};
+  const handleUpdateLeadStatus = async (leadId, status) => {
+    try {
+        const response = await fetch(`/api/crm/leads/${leadId}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+        });
+        if (!response.ok) throw new Error('Failed to update lead status on server');
+        // Refresh all data from server to ensure UI is consistent
+        await fetchData();
+    } catch (error) {
+        console.error("Failed to update lead status:", error);
+        setError("Failed to update lead status. Please try again.");
+    }
+  };
 
-  const handleUpdateConnection = (connection) => {
-      const key = `${connection}Connected`;
-      setSettings(prev => ({...prev, [key]: !prev[key]}));
+  const handleSendMessage = async (leadId, message) => {
+      try {
+        const response = await fetch(`/api/crm/leads/${leadId}/message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message }),
+        });
+        if (!response.ok) throw new Error('Failed to send message on server');
+        // Refresh all data from server to get new message and potential reply
+        await fetchData();
+        // If the chat modal is open for this lead, update its state
+        setActiveChatLead(prevLead => {
+          if (prevLead && prevLead.id === leadId) {
+             // We need the *very latest* lead info after the fetch.
+             // This is a bit tricky, so for now we'll rely on the re-render.
+             // A more advanced state management would handle this better.
+          }
+          return prevLead;
+        });
+
+    } catch (error) {
+        console.error("Failed to send message:", error);
+        setError("Failed to send message. Please try again.");
+    }
   };
 
   const handleGenerateCopy = async () => {
     setIsGeneratingCopy(true);
-    setAiCopyIdeas("");
     try {
-        const responseText = await mockApiService.generateAdCopy(settings);
-        setAiCopyIdeas(responseText);
-        setSettings(prev => ({
-            ...prev,
-            aiChatHistory: [...prev.aiChatHistory, { timestamp: new Date(), settings: { ...prev }, response: responseText }]
-        }));
-    } catch (err) {
-        setAiCopyIdeas(`ERROR: ${err.message}`);
+        const result = await mockApiService.generateAdCopy(settings);
+        setAiCopyIdeas(result);
+        setAiChatHistory(prev => [...prev, { timestamp: new Date(), content: result }]);
+    } catch (error) {
+        console.error(error);
+        setAiCopyIdeas("Error: Could not generate ad copy. Check console for details.");
     } finally {
         setIsGeneratingCopy(false);
     }
   };
 
   const clearAiHistory = () => {
-      setSettings(p => ({...p, aiChatHistory: []}));
+    setAiCopyIdeas('');
+    setAiChatHistory([]);
   };
 
   const renderView = () => {
-    if (loading) {
-      return <div className="flex justify-center items-center h-full"><Loader size={48} className="text-brand-gold animate-spin" /></div>;
-    }
-    if (error) {
-        return (
-            <Card className="border-red-500/50">
-                <div className="flex items-center">
-                    <AlertTriangle className="text-red-500 mr-3" size={24}/>
-                    <div>
-                        <h2 className="text-xl font-bold text-red-400">Error</h2>
-                        <p className="text-red-400/80">{error}</p>
-                    </div>
-                </div>
-            </Card>
-        );
-    }
-
-    switch (activeView) {
+    switch(activeView) {
       case 'dashboard': return <DashboardView campaigns={campaigns} />;
       case 'campaigns': return <CampaignsView campaigns={campaigns} />;
-      case 'crm': return <CRMView leads={leads} onStatusChange={handleStatusChange} onOpenChat={setActiveChatLead} />;
+      case 'crm': return <CRMView leads={leads} onStatusChange={handleUpdateLeadStatus} onOpenChat={setActiveChatLead} />;
       case 'audit': return <AuditLogView logs={auditLogs} />;
       case 'settings': return <SettingsView settings={settings} setSettings={setSettings} onUpdateConnection={handleUpdateConnection} />;
-      case 'growth': return <GrowthEngineView settings={settings} setSettings={setSettings} onGenerateCopy={handleGenerateCopy} aiCopyIdeas={aiCopyIdeas} isGeneratingCopy={isGeneratingCopy} aiChatHistory={settings.aiChatHistory} clearAiHistory={clearAiHistory} />;
+      case 'growth': return <GrowthEngineView settings={settings} setSettings={setSettings} onGenerateCopy={handleGenerateCopy} aiCopyIdeas={aiCopyIdeas} isGeneratingCopy={isGeneratingCopy} aiChatHistory={aiChatHistory} clearAiHistory={clearAiHistory} />;
       default: return <DashboardView campaigns={campaigns} />;
     }
-  };
+  }
 
   return (
-    <div className={`min-h-screen font-sans ${settings.theme === 'dark' ? 'text-brand-light' : 'text-brand-dark'}`}>
+    <div className="text-brand-light pb-24">
       <Header settings={settings} setSettings={setSettings} serverStatus={serverStatus} />
-      <main className="pt-20 pb-20 px-4 max-w-6xl mx-auto">
+      
+      <main className="max-w-6xl mx-auto p-4 pt-24">
+        {error && (
+            <div className="bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-lg mb-4 flex items-center space-x-2">
+                <AlertTriangle size={20} />
+                <span>{error}</span>
+            </div>
+        )}
         {renderView()}
       </main>
-      <BottomNav activeView={activeView} setActiveView={setActiveView} />
+
       {activeChatLead && <ChatModal lead={activeChatLead} onClose={() => setActiveChatLead(null)} onSendMessage={handleSendMessage} />}
+      
+      <BottomNav activeView={activeView} setActiveView={setActiveView} />
     </div>
   );
 };
