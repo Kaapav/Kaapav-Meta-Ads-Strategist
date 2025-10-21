@@ -795,19 +795,30 @@ const App = () => {
     }
   };
 
-  const handleGenerateCopy = async () => {
-    setIsGeneratingCopy(true);
-    try {
-        const result = await mockApiService.generateAdCopy(settings);
-        setAiCopyIdeas(result);
-        setAiChatHistory(prev => [...prev, { timestamp: new Date(), content: result }]);
-    } catch (error) {
-        console.error(error);
-        setAiCopyIdeas("Error: Could not generate ad copy. Check console for details.");
-    } finally {
-        setIsGeneratingCopy(false);
+ const handleGenerateCopy = async () => {
+  setIsGeneratingCopy(true);
+  try {
+    const prompt = `Generate 3 ad copy variations for ${settings.category} targeting ${settings.targetCity.join(', ')}. Use angle: ${settings.psychologicalAngle}. Include short headlines, body, CTA.`;
+    const resp = await fetch('/api/ai/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const json = await resp.json();
+    if (json?.text) {
+      setAiCopyIdeas(json.text);
+      setAiChatHistory(prev => [...prev, { timestamp: new Date(), content: json.text }]);
+    } else {
+      setAiCopyIdeas('AI returned empty response.');
     }
-  };
+  } catch (err) {
+    console.error('generate error', err);
+    setAiCopyIdeas('Error: Could not generate ad copy.');
+  } finally {
+    setIsGeneratingCopy(false);
+  }
+};
+
 
   const clearAiHistory = () => {
     setAiCopyIdeas('');
