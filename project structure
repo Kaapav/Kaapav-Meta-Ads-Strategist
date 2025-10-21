@@ -1,0 +1,28 @@
+project structure
+
+Kaapav_Meta_Ads/
+├── app/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── AndroidManifest.xml
+│   │   │   ├── java/
+│   │   │   │   └── com/
+│   │   │   │       └── kaapav/
+│   │   │   │           └── metaads/
+│   │   │   │               ├── MainActivity.kt
+│   │   │   │               └── ui/
+│   │   │   │                   ├── DashboardFragment.kt
+│   │   │   │                   ├── adapters/
+│   │   │   │                   └── models/
+│   │   │   └── res/
+│   │   │       ├── layout/
+│   │   │       │   ├── fragment_dashboard.xml
+│   │   │       │   ├── item_stat_card.xml
+│   │   │       │   └── item_creative_row.xml
+│   │   │       └── values/
+│   │   │           ├── colors.xml
+│   │   │           ├── themes.xml
+│   │   │           └── strings.xml
+│   ├── build.gradle
+├── build.gradle.kts
+└── settings.gradle.kts
