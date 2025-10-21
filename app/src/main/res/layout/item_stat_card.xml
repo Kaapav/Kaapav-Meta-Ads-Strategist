@@ -1,1 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="200dp"
+    android:layout_height="96dp"
+    android:layout_marginEnd="12dp"
+    android:cardCornerRadius="12dp"
+    android:cardElevation="2dp"
+    android:cardUseCompatPadding="true"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tvStatTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ROAS"
+            android:textSize="12sp"
+            android:textColor="@color/muted" />
+
+        <TextView
+            android:id="@+id/tvStatValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3.8x"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/kaapav_text"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:id="@+id/tvStatChange"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+24% vs 7d"
+            android:textSize="12sp"
+            android:textColor="@color/kaapav_sub"
+            android:layout_marginTop="6dp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
 
