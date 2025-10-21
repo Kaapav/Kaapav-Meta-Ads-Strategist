@@ -1,1 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="kaapav_gold">#D4AF37</color>
+    <color name="kaapav_gold_dark">#B48F2C</color>
+    <color name="kaapav_bg">#FAF8F6</color>
+    <color name="kaapav_text">#111827</color>
+    <color name="kaapav_sub">#6B7280</color>
+    <color name="white">#FFFFFF</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="muted">#9CA3AF</color>
+</resources>
 
