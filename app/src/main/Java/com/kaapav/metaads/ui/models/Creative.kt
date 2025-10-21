@@ -1,3 +1,3 @@
 package com.kaapav.metaads.ui.models
 
-data class Stat(val title: String, val value: String, val change: String)
+data class Creative(val title: String, val meta: String, val roas: String, val stats: String, val imageUrl: String)
