@@ -1,1 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/kaapav_bg"
+    android:padding="16dp"
+    tools:context=".ui.DashboardFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gap="12dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="8dp">
+
+            <FrameLayout
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@color/kaapav_gold"
+                android:layout_marginEnd="12dp"
+                android:clipToPadding="true"
+                android:padding="8dp"
+                android:foregroundGravity="center">
+
+                <!-- small svg / icon placeholder -->
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@android:drawable/ic_dialog_info"
+                    android:tint="@color/white"
+                    android:scaleType="centerInside" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Kaapav — Meta Ads Strategist"
+                    android:textColor="@color/kaapav_text"
+                    android:textStyle="bold"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dashboard • Live insights • Auto-optimizer"
+                    android:textColor="@color/kaapav_sub"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnSync"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Sync"
+                android:backgroundTint="@color/kaapav_gold_dark"
+                android:textColor="@color/white"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp" />
+        </LinearLayout>
+
+        <!-- Stat cards horizontal -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvStats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:overScrollMode="never"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:scrollbars="horizontal"
+            android:paddingBottom="6dp"
+            android:nestedScrollingEnabled="false" />
+
+        <!-- Top Creatives -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Top Creatives"
+            android:textColor="@color/kaapav_text"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"
+            android:textSize="16sp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCreatives"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:layout_marginTop="8dp" />
+
+        <!-- Quick actions -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Quick Actions"
+            android:textColor="@color/kaapav_text"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:weightSum="3">
+
+            <Button
+                android:id="@+id/btnBoost"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="44dp"
+                android:text="Boost Winner"
+                android:backgroundTint="@color/kaapav_gold"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/btnPause"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="Pause Fatigued"
+                android:backgroundTint="@color/white"
+                android:textColor="@color/kaapav_text"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnMutate"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="44dp"
+                android:text="Mutate Creative"
+                android:backgroundTint="@color/white"
+                android:textColor="@color/kaapav_text" />
+        </LinearLayout>
+
+        <!-- Recent leads (compact) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recent Leads"
+            android:textColor="@color/kaapav_text"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp"
+            android:divider="@null">
+
+            <TextView
+                android:id="@+id/tvLead1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+91 98765 43210 — New"
+                android:textColor="@color/kaapav_text"
+                android:padding="8dp" />
+
+            <TextView
+                android:id="@+id/tvLead2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+91 99876 54321 — Converted"
+                android:textColor="@color/kaapav_text"
+                android:padding="8dp" />
+        </LinearLayout>
+
+        <Space android:layout_width="match_parent" android:layout_height="24dp"/>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
 
