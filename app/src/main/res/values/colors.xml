@@ -1,12 +1,11 @@
 <resources>
-    <!-- Kaapav Gold & White theme -->
-    <color name="kaapav_bg">#FFFFFF</color>          <!-- overall background -->
-    <color name="kaapav_card">#FFFFFF</color>        <!-- card background (white) -->
-    <color name="kaapav_gold">#D4AF37</color>        <!-- primary gold -->
-    <color name="kaapav_gold_dark">#B48F2C</color>   <!-- darker gold -->
-    <color name="kaapav_text">#0F172A</color>        <!-- primary text (dark) -->
-    <color name="kaapav_sub">#6B7280</color>         <!-- secondary text -->
-    <color name="kaapav_muted">#F3F4F6</color>       <!-- subtle surfaces / dividers -->
-    <color name="error_red">#8B2B2F</color>
-    <color name="success_green">#10B981</color>
+<color name="kaapav_bg">#FFFFFF</color>
+<color name="kaapav_card">#FFFFFF</color>
+<color name="kaapav_gold">#D4AF37</color>
+<color name="kaapav_gold_dark">#B48F2C</color>
+<color name="kaapav_text">#0F172A</color>
+<color name="kaapav_sub">#6B7280</color>
+<color name="kaapav_muted">#F3F4F6</color>
+<color name="kaapav_success">#10B981</color>
+<color name="kaapav_error">#8B2B2F</color>
 </resources>
