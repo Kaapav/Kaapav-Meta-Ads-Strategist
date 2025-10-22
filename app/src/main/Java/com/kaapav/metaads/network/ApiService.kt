@@ -16,6 +16,22 @@ data class CreativeInsight(
 typealias CampaignsResponse = List<CreativeInsight>
 
 interface ApiService {
-    @GET("api/insights/campaign")
-    suspend fun getCampaignInsights(): Response<CampaignsResponse>
+@GET("api/meta/campaigns")
+suspend fun getCampaignInsights(): Response<List<Map<String, Any?>>>
+
+
+@GET("api/health")
+suspend fun getHealth(): Response<Map<String, Any?>>
+
+
+@GET("api/meta/status")
+suspend fun getMetaStatus(): Response<Map<String, Any?>>
+
+
+@GET("api/whatsapp/status")
+suspend fun getWhatsappStatus(): Response<Map<String, Any?>>
+
+
+@GET("/api/cache/status")
+suspend fun getCacheStatus(): Response<Map<String, Any?>>
 }
