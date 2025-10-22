@@ -68,8 +68,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="Sync"
-                android:backgroundTint="@color/kaapav_gold_dark"
-                android:textColor="@color/white"
+                android:backgroundTint="@color/kaapav_gold"
+                android:textColor="@color/kaapav_bg"
                 android:paddingLeft="12dp"
                 android:paddingRight="12dp" />
         </LinearLayout>
