@@ -1,48 +1,26 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <!-- Mobile & Viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Theme (used by browser UI only) -->
+    <meta name="theme-color" content="#111827" />
+
+    <!-- App Title -->
     <title>Kaapav Meta Ads Strategist</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'brand-gold': '#C59A3D',
-              'brand-dark': '#111827',
-              'brand-light': '#FFFFFF',
-              'brand-gray': '#374151',
-              'brand-light-gray': '#9CA3AF',
-            },
-          },
-        },
-      }
-    </script>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.546.0",
-    "express": "https://aistudiocdn.com/express@^5.1.0",
-    "cors": "https://aistudiocdn.com/cors@^2.8.5",
-    "firebase-admin/": "https://aistudiocdn.com/firebase-admin@^13.5.0/",
-    "ws": "https://aistudiocdn.com/ws@^8.18.3",
-    "http": "https://aistudiocdn.com/http@^0.0.1-security",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "url": "https://aistudiocdn.com/url@^0.11.4"
-  }
-}
-</script>
-</head>
-  <body class="bg-brand-dark">
+
+    <!-- App Icon -->
+    <link rel="icon" type="image/png" href="/pwa-192x192.png" />
+  </head>
+
+  <body>
+    <!-- React Root -->
     <div id="root"></div>
+
+    <!-- Vite Entry -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
