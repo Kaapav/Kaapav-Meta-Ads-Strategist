@@ -15,6 +15,7 @@ export default defineConfig({
     react(),
 
     VitePWA({
+      manifestFilename: "manifest.json",
       registerType: "autoUpdate",
 
       devOptions: {
