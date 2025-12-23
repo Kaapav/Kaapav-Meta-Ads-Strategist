@@ -11,4 +11,4 @@ Start-Process powershell -ArgumentList "npm run dev"
 Start-Sleep -Seconds 4
 
 # Open in Google Chrome
-Start-Process "chrome.exe" "http://localhost:5173"
+Start-Process "chrome.exe" "http://localhost:5174"

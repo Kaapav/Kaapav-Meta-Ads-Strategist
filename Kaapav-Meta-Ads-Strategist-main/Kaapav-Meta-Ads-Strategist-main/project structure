@@ -1,0 +1,25 @@
+Kaapav_Meta_Ads/
+├── app/
+│   ├── build.gradle
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── AndroidManifest.xml
+│   │   │   ├── java/com/kaapav/metaads/
+│   │   │   │   ├── MainActivity.kt
+│   │   │   │   └── ui/
+│   │   │   │       ├── DashboardFragment.kt
+│   │   │   │       ├── CampaignsFragment.kt
+│   │   │   │       ├── CRMFragment.kt
+│   │   │   │       ├── GrowthFragment.kt
+│   │   │   │       ├── AuditFragment.kt
+│   │   │   │       └── SettingsFragment.kt
+│   │   │   └── res/
+│   │   │       ├── layout/fragment_dashboard.xml
+│   │   │       ├── layout/fragment_campaigns.xml
+│   │   │       ├── layout/fragment_crm.xml
+│   │   │       ├── layout/fragment_growth.xml
+│   │   │       ├── layout/fragment_audit.xml
+│   │   │       ├── layout/fragment_settings.xml
+│   │   │       └── values/colors.xml, themes.xml, strings.xml
+├── build.gradle.kts
+└── settings.gradle.kts

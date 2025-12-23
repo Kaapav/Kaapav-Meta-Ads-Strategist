@@ -1,0 +1,11 @@
+<resources>
+    <color name="kaapav_gold">#D4AF37</color>
+    <color name="kaapav_gold_dark">#B48F2C</color>
+    <color name="kaapav_white">#FFFFFF</color>
+    <color name="kaapav_text">#0F172A</color>
+    <color name="kaapav_sub">#6B7280</color>
+    <color name="kaapav_muted">#F3F4F6</color>
+    <color name="kaapav_success">#10B981</color>
+    <color name="kaapav_error">#8B2B2F</color>
+    <color name="nav_item_inactive">#9CA3AF</color>
+</resources>

@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.Kaapav" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/kaapav_gold</item>
+        <item name="colorOnPrimary">@color/kaapav_white</item>
+        <item name="android:windowBackground">@color/kaapav_white</item>
+        <item name="android:textColorPrimary">@color/kaapav_text</item>
+        <item name="materialCardViewStyle">@style/Widget.MaterialComponents.CardView</item>
+    </style>
+</resources>

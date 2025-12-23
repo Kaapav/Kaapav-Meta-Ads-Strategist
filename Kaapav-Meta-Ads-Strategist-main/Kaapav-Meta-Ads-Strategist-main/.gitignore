@@ -1,0 +1,13 @@
+# Node
+node_modules
+dist
+.env
+.env.local
+
+# caches
+server/.ai_cache/
+
+# IDE
+.vscode
+.idea
+.DS_Store
